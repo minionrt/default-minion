@@ -8,10 +8,11 @@ mod container;
 mod interaction_loop;
 mod llm;
 mod macros;
-mod util;
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let config = config::Config::load();
     let api_url = config.api_base_url.unwrap();
     let api_token = config.api_token.unwrap();

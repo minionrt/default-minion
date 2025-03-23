@@ -1,6 +1,8 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use async_openai::config::OpenAIConfig;
+use async_openai::error::OpenAIError;
 use async_openai::types::{
     ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage,
     ChatCompletionRequestMessageContentPartImage, ChatCompletionRequestMessageContentPartText,
@@ -8,6 +10,7 @@ use async_openai::types::{
     ChatCompletionRequestUserMessageContent, ChatCompletionRequestUserMessageContentPart,
     CreateChatCompletionRequest, ImageDetail, ImageUrl,
 };
+use backoff::{Error as BackoffError, ExponentialBackoffBuilder};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use image::codecs::webp::WebPEncoder;
@@ -15,7 +18,8 @@ use image::{ColorType, ImageEncoder};
 use thiserror::Error;
 
 use crate::enclose;
-use crate::util::retry_exp;
+
+const MAX_ELAPSED_TIME_IN_SECS: u64 = 60;
 
 #[derive(Clone)]
 pub struct LLMClient {
@@ -33,7 +37,10 @@ pub enum PromptError {
 impl LLMClient {
     pub fn new(base_url: &str, openai_key: &str) -> Self {
         let config = OpenAIConfig::new().with_api_base(base_url).with_api_key(openai_key);
-        let client = Arc::new(async_openai::Client::with_config(config));
+        let strategy = ExponentialBackoffBuilder::default()
+            .with_max_elapsed_time(Some(Duration::from_secs(MAX_ELAPSED_TIME_IN_SECS)))
+            .build();
+        let client = Arc::new(async_openai::Client::with_config(config).with_backoff(strategy));
         Self { client }
     }
 
@@ -49,13 +56,11 @@ impl LLMClient {
             stop: None,
             ..Default::default()
         };
-
         let client = self.client.clone();
-
         let response = retry_exp(move || {
             enclose! {
                 (client, request)
-                async move { Ok(client.chat().create(request).await?) }
+                async move { client.chat().create(request).await }
             }
         })
         .await?;
@@ -185,4 +190,37 @@ impl ContentItem {
             }
         }
     }
+}
+
+/// Executes an asynchronous operation with exponential backoff retry logic.
+/// The operation is retried if it fails with a rate limit error.
+async fn retry_exp<F, Fut, T>(f: F) -> Result<T, OpenAIError>
+where
+    F: Fn() -> Fut,
+    Fut: std::future::Future<Output = Result<T, OpenAIError>>,
+{
+    let strategy = ExponentialBackoffBuilder::default()
+        .with_max_elapsed_time(Some(Duration::from_secs(MAX_ELAPSED_TIME_IN_SECS)))
+        .build();
+
+    backoff::future::retry(strategy, || async {
+        let res = f().await;
+        match res {
+            Ok(value) => Ok(value),
+            Err(err) => {
+                if let OpenAIError::ApiError(api_error) = &err {
+                    if api_error.code.as_deref() == Some("rate_limit_exceeded") {
+                        log::warn!("Rate limit exceeded: {}", api_error);
+                        log::warn!("Retrying ...");
+                        Err(BackoffError::transient(err))
+                    } else {
+                        Err(BackoffError::Permanent(err))
+                    }
+                } else {
+                    Err(BackoffError::Permanent(err))
+                }
+            }
+        }
+    })
+    .await
 }
