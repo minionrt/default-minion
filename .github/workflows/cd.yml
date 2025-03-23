@@ -39,6 +39,6 @@ jobs:
           context: .
           file: Containerfile.minion
           push: true
-          tags: ghcr.io/autominion/minion:x86-64-latest
+          tags: ghcr.io/autominion/default-minion:x86-64-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

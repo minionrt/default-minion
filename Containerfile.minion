@@ -11,7 +11,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . .
-RUN cargo build --release --bin minion
+RUN cargo build --release --bin default-minion
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
@@ -32,6 +32,6 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io
 WORKDIR /app
-COPY --from=builder /app/target/release/minion /usr/local/bin
+COPY --from=builder /app/target/release/default-minion /usr/local/bin
 # Start the docker daemon and the application
-ENTRYPOINT ["sh", "-c", "dockerd >/dev/null 2>&1 & /usr/local/bin/minion"]
+ENTRYPOINT ["sh", "-c", "dockerd >/dev/null 2>&1 & /usr/local/bin/default-minion"]

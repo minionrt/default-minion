@@ -419,6 +419,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "default-minion"
+version = "0.1.0"
+dependencies = [
+ "agent-api",
+ "async-openai",
+ "backoff",
+ "base64 0.21.7",
+ "bollard",
+ "devcontainer",
+ "env_logger",
+ "envy",
+ "futures-util",
+ "git2",
+ "image",
+ "log",
+ "once_cell",
+ "rand",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tar",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "deranged"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1389,34 +1417,6 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "minion"
-version = "0.1.0"
-dependencies = [
- "agent-api",
- "async-openai",
- "backoff",
- "base64 0.21.7",
- "bollard",
- "devcontainer",
- "env_logger",
- "envy",
- "futures-util",
- "git2",
- "image",
- "log",
- "once_cell",
- "rand",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "tar",
- "thiserror 1.0.69",
- "tokio",
- "url",
-]
 
 [[package]]
 name = "miniz_oxide"
