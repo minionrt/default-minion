@@ -35,7 +35,7 @@ impl Repo {
         let head = self.repo.head().unwrap();
         let parent = self.repo.find_commit(head.target().unwrap()).unwrap();
         let sig = self.repo.signature().unwrap();
-        let message = "Commit from autominion";
+        let message = "Commit from minionrt";
         self.repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent]).unwrap();
         let mut remote = self.repo.find_remote("origin").unwrap();
         remote

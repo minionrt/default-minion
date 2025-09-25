@@ -1,7 +1,7 @@
 # Reference Agent
 
-autominion is an open-source project aiming to connect software engineering tools with AI agents through a common interface.
-This repository contains the source code for a reference agent that speaks the autominion protocol.
+minionrt is an open-source project aiming to connect software engineering tools with AI agents through a common interface.
+This repository contains the source code for a reference agent that speaks the minionrt protocol.
 
 > [!WARNING]
 > This project is in an early state of development.
@@ -9,16 +9,16 @@ This repository contains the source code for a reference agent that speaks the a
 
 ## Quickstart
 
-- Install the [autominion CLI](https://github.com/autominion/cli).
+- Install the [minionrt CLI](https://github.com/minionrt/cli).
 - Clone this repository on your machine:
   ```console
-  git clone https://github.com/autominion/default-minion
+  git clone https://github.com/minionrt/default-minion
   ```
 - Navigate to any git repository for testing and run:
   ```console
   minion run --containerfile <path to the default-minion repo>/Containerfile.minion
   ```
-  The autominion CLI will build a container image from the current state of your local clone of the `default-minion` repository.
+  The minionrt CLI will build a container image from the current state of your local clone of the `default-minion` repository.
   This container image will then subsequently be used to run the agent on the git repository in your current working directory.
 
 ## License
